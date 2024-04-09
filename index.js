@@ -28,13 +28,11 @@ setTimeout(() => console.log('Timeout reached'), 20000); // 20-second delay
 
 
 
-const express = require('express');
 const connectDB = require('./config/db');
 
 // Connect to MongoDB
 connectDB();
 
-const app = express();
 app.use(express.json()); // Middleware to parse JSON
 
 // Define routes
