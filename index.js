@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const mongoose = require('mongoose');
+const userRoutes = require('./routes/userRoutes');
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connection established.'))
