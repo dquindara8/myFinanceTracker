@@ -29,22 +29,5 @@ router.get('/myProtectedRoute', authMiddleware, (req, res) => {
   // Protected route logic here
 });
 
-router.post('/login', async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) {
-      return res.status(404).send({ error: 'Login failed!' });
-    }
-    const isPasswordMatch = await bcrypt.compare(req.body.password, user.password);
-    if (!isPasswordMatch) {
-      return res.status(400).send({ error: 'Login failed!' });
-    }
-    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '72h' });
-    res.send({ user, token });
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
-
 
 module.exports = router;

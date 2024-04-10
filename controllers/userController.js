@@ -66,4 +66,17 @@ exports.login = async (req, res) => {
   }
 };
 
+
+exports.getProfile = async (req, res) => {
+  try {
+    // Assuming req.user is set by your authMiddleware and contains the user's ID
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).send({ error: 'User not found' });
+    }
+    res.send(user);
+  } catch (error) {
+    res.status(500).send({ error: 'Server error' });
+  }
+};
 // Other user-related functions can be added here, like getUserDetails, updateUser, etc.
