@@ -1,11 +1,31 @@
 require('dotenv').config();
+
 const mongoose = require('mongoose');
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connection established.'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+
+
+
+const dbHost = process.env.DB_HOST;
+const jwtSecret = process.env.JWT_SECRET;
+
+
+
+const jwt = require('jsonwebtoken');
+
+const token = jwt.sign({ data: 'your data here' }, process.env.JWT_SECRET, { expiresIn: '180d' });
+
+
+
 const express = require('express');
 const app = express();
 
 async function startServer() {
   try {
-    await mongoose.connect(process.env.ATLAS_URI);
+    await mongoose.connect(process.env.MONGODB_URI);
     console.log('MongoDB connection established.');
 
     app.listen(3000, () => {
@@ -39,9 +59,6 @@ app.use(express.json()); // Middleware to parse JSON
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
 
 
 
@@ -69,8 +86,6 @@ async function verifyPassword(submittedPassword, storedHash) {
 
 
 
-const jwt = require('jsonwebtoken');
-
 function generateToken(userId) {
   const payload = { userId };
   const secretKey = 'yourSecretKey'; // Should be in your environment variables
@@ -94,3 +109,9 @@ function verifyToken(token) {
     return null; // or handle the error appropriately
   }
 }
+
+
+const PORT = process.env.PORT || 3001; // Use 3001 instead of 3000
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
