@@ -1,118 +1,74 @@
+// Load environment variables from .env file
 require('dotenv').config();
 
-const mongoose = require('mongoose');
-const userRoutes = require('./routes/userRoutes');
-
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connection established.'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-
-
-
-const dbHost = process.env.DB_HOST;
-const jwtSecret = process.env.JWT_SECRET;
-
-
-
-const jwt = require('jsonwebtoken');
-
-const token = jwt.sign({ data: 'your data here' }, process.env.JWT_SECRET, { expiresIn: '180d' });
-
-
-
+// Importing necessary libraries
 const express = require('express');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const userRoutes = require('./routes/userRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
+
+// MongoDB URI
+const MONGODB_URI = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 3001;
+
+// Express application initialization
 const app = express();
-
-async function startServer() {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB connection established.');
-
-    app.listen(3000, () => {
-      console.log('Server is running on http://localhost:3000');
-    });
-  } catch (error) {
-    console.error('MongoDB connection error:', error.message);
-  }
-}
-
-startServer();
-
-
-process.stdin.resume();
-
-setTimeout(() => console.log('Timeout reached'), 20000); // 20-second delay
-
-
-
-
-
-
-const connectDB = require('./config/db');
-
-// Connect to MongoDB
-connectDB();
-
 app.use(express.json()); // Middleware to parse JSON
 
+// Connect to MongoDB using Mongoose
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log('MongoDB connection established.');
+    // Start the server once MongoDB is connected
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  })
+  .catch(err => console.error('MongoDB connection error:', err));
+
 // Define routes
-app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/transactions', require('./routes/transactionRoutes'));
+app.use('/api/users', userRoutes);
+app.use('/api/transactions', transactionRoutes);
 
-
-
-
-
-const bcrypt = require('bcryptjs');
-
+// Password hashing function
 async function hashPassword(password) {
-  const salt = await bcrypt.genSalt(10); // Generate a salt
-  const hashedPassword = await bcrypt.hash(password, salt); // Hash the password with the salt
-  return hashedPassword;
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
 }
 
-
-
-
-
-
+// Password verification function
 async function verifyPassword(submittedPassword, storedHash) {
-  const isMatch = await bcrypt.compare(submittedPassword, storedHash);
-  return isMatch; // true if the password matches, false otherwise
+  return bcrypt.compare(submittedPassword, storedHash);
 }
 
-
-
-
-
-
+// JWT token generation function
 function generateToken(userId) {
   const payload = { userId };
-  const secretKey = 'yourSecretKey'; // Should be in your environment variables
-  const options = { expiresIn: '1h' }; // Token expires in 1 hour
-  const token = jwt.sign(payload, secretKey, options);
-  return token;
+  const secretKey = process.env.JWT_SECRET;
+  const options = { expiresIn: '1h' };
+  return jwt.sign(payload, secretKey, options);
 }
 
-
-
-
-
-
+// JWT token verification function
 function verifyToken(token) {
-  const secretKey = 'yourSecretKey'; // Same key used for signing the tokens
   try {
-    const decoded = jwt.verify(token, secretKey);
-    return decoded; // Decoded payload if the token is valid
+    return jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
     console.error("Token verification failed:", err.message);
-    return null; // or handle the error appropriately
+    return null;
   }
 }
 
-
-const PORT = process.env.PORT || 3001; // Use 3001 instead of 3000
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// For extended functionality or future expansions
+// async function additionalDBOperations() {
+//   const { MongoClient } = require('mongodb');
+//   const client = new MongoClient(MONGODB_URI);
+//   try {
+//     await client.connect();
+//     const database = client.db('test');
+//     const collection = database.collection('transactions');
+//     // Perform CRUD operations here
+//   } finally {
+//     await client.close();
+//   }
+// }
