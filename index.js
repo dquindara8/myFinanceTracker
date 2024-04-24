@@ -1,4 +1,3 @@
-// Load environment variables from .env file
 require('dotenv').config();
 
 // Importing necessary libraries
@@ -9,7 +8,6 @@ const jwt = require('jsonwebtoken');
 const userRoutes = require('./routes/userRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 
-// MongoDB URI
 const MONGODB_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3001;
 
@@ -17,7 +15,6 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 app.use(express.json()); // Middleware to parse JSON
 
-// Connect to MongoDB using Mongoose
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('MongoDB connection established.');
@@ -30,7 +27,6 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
 app.use('/api/users', userRoutes);
 app.use('/api/transactions', transactionRoutes);
 
-// Password hashing function
 async function hashPassword(password) {
   const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(password, salt);

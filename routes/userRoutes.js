@@ -22,7 +22,6 @@ router.post('/login', [
   body('password', 'Password is required').exists()
 ], userController.login);
 
-// Fetch the logged-in user's profile
 router.get('/me', authMiddleware, userController.getProfile);
 
 router.get('/myProtectedRoute', authMiddleware, (req, res) => {
