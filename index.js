@@ -68,5 +68,3 @@ function verifyToken(token) {
 //     await client.close();
 //   }
 // }
-
-indexedDB.js
